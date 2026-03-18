@@ -1,1 +1,154 @@
-# -1.0
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>خريطة الميمز</title>
+<style>
+body { font-family: Arial; text-align:center; background:#111; color:white; margin:0; }
+.screen { display:none; padding:40px; }
+.active { display:block; }
+button { padding:10px 20px; margin:10px; border:none; border-radius:10px; background:#00c3ff; color:white; font-size:16px; cursor:pointer; }
+input { padding:10px; margin:10px; border-radius:10px; border:none; }
+.box { background:rgba(255,255,255,0.1); padding:20px; border-radius:15px; display:inline-block; text-align:right; }
+</style>
+</head>
+<body>
+
+<!-- الصفحة الرئيسية -->
+<div id="home" class="screen active">
+  <h1>🔥 مرحبا بك في خريطة الميمز 🔥</h1>
+  <button onclick="show('menu')">🚀 بدء</button>
+</div>
+
+<!-- القائمة -->
+<div id="menu" class="screen">
+  <h2>اختر</h2>
+  <button onclick="show('login')">🔐 Log In</button>
+  <button onclick="show('signin')">📝 Sign In</button>
+</div>
+
+<!-- تسجيل الدخول -->
+<div id="login" class="screen">
+  <div class="box">
+    <h2>تسجيل الدخول</h2>
+    <input id="username" placeholder="اسمك"><br>
+    <input id="password" type="password" placeholder="كلمة السر"><br>
+    <button onclick="login()">دخول</button>
+    <p id="result"></p>
+  </div>
+</div>
+
+<!-- التسجيل -->
+<div id="signin" class="screen">
+  <div class="box">
+    <h2>التسجيل</h2>
+    <p>لازم ترسل لصاحب الخريطة فالخاص فالانستا 📩<br>وهو يعطيك كلمة السر عشان تدخل حسابك</p>
+    <a href="https://instagram.com/Louaye_Gamer_i" target="_blank">
+      <button>📷 تواصل على انستغرام</button>
+    </a>
+  </div>
+</div>
+
+<!-- عرض البيانات -->
+<div id="profile" class="screen">
+  <div class="box">
+    <h2>معلوماتك</h2>
+    <pre id="data"></pre>
+    <button onclick="show('home')">رجوع</button>
+  </div>
+</div>
+
+<script>
+// 🟢 بيانات المستخدمين (أسماء بالعربي + كلمة سر عشوائية)
+const users = {
+"حمود": { password: "48392", soldiers:270, economy:"31$", military:1, oil:1, team:1, extra:""},
+"عمر": { password: "59183", soldiers:3500, economy:"125$", military:1, team:1, nuclear:1, extra:""},
+"علي جواد": { password:"28475", soldiers:820, economy:"131$", military:1, passport:"لؤي", team:1, extra:""},
+"ماهر": { password:"19384", soldiers:5625, economy:"120$", military:1, team:1, extra:""},
+"بدر": { password:"82746", soldiers:1070, economy:"126$", military:1, rocket:1, passport:"لؤي", team:1, extra:""},
+"لؤي": { password:"49520", soldiers:13200, economy:"9908$", debts:0, military:2, oil:1, iron:1, uranium:1, nuclear:78, team:4, stealth:true, extra:""},
+"احمد": { password:"10394", soldiers:1740, economy:"100$", military:1, team:1, extra:""},
+"حماد": { password:"58219", soldiers:340, economy:"50$", military:1, oil:1, team:1, extra:""},
+"جورنمي": { password:"67283", soldiers:480, economy:"24$", military:1, team:1, extra:""},
+"محمد": { password:"39485", soldiers:130, economy:"185$", military:1, rockets5:1, rocket20:1, team:1, extra:""},
+"قيس": { password:"58293", soldiers:5500, economy:"3700$", debts:3, military:1, oil5:1, machines1:4, diamond5:1, passport:18, team:5, nuclear:7, army_distribution:true, extra:""},
+"يونس": { password:"49182", soldiers:10, economy:"45$", military:1, passport:"لؤي", team:1, extra:""},
+"مريم": { password:"28591", soldiers:140, economy:"100$", military:1, passport:"لؤي", team:1, extra:""},
+"عبد الله": { password:"39518", soldiers:20, economy:"", military:1, diamond:1, team:1, extra:""},
+"مؤمنة": { password:"58274", soldiers:200, economy:"80$", military:1, team:1, extra:""},
+"ناصر": { password:"49385", soldiers:90, economy:"100$", military:1, team:1, extra:""},
+"رحيم": { password:"28491", soldiers:5000, economy:"100$", military:1, team:1, extra:""},
+"حسونياس": { password:"59182", soldiers:860, economy:"100$", military:1, team:1, extra:""},
+"ادم": { password:"39475", soldiers:300, economy:"130$", military:1, team:1, extra:""},
+"سانتش": { password:"49583", soldiers:37700, economy:"100$", military:1, passport:"لؤي", team:1, extra:""},
+"نونو": { password:"58261", soldiers:15, economy:"100$", military:1, team:1, extra:""},
+"روسيا": { password:"49361", soldiers:0, economy:"0$", military:1, team:1, extra:""},
+"سكايلي الاحمر": { password:"39462", soldiers:0, economy:"0$", military:0, team:0, extra:""},
+"ريد تيب": { password:"58239", soldiers:8000, economy:"100$", military:1, team:1, extra:""},
+"ورد": { password:"49183", soldiers:1270, economy:"100$", military:1, team:1, extra:""},
+"ادم ايطاليا": { password:"28479", soldiers:8, economy:"100$", military:1, team:1, extra:""},
+"عبد الوهاب": { password:"39584", soldiers:2020, economy:"195$", military:1, team:3, extra:""},
+"عبدو": { password:"58248", soldiers:11500, economy:"100$", military:1, team:1, extra:""},
+"سلطان": { password:"49369", soldiers:250, economy:"100$", military:1, team:1, extra:""},
+"وديد": { password:"39458", soldiers:1200, economy:"385$", military:1.060, team:1, oil5:1, rocket5:1, defense:true, extra:""},
+"الوليد": { password:"58241", soldiers:11500, economy:"100$", military:1, team:1, extra:""},
+"وليان": { password:"49370", soldiers:300, economy:"525$", debts:500, military:1, team:1, stealth:true, rocket5:5, nuclear5:true, extra:""},
+"نزار": { password:"39459", soldiers:2450, economy:"100$", military:1, team:1, extra:""},
+"عثمان": { password:"58243", soldiers:320, economy:"100$", military:1, team:1, extra:""},
+"لونا": { password:"49371", soldiers:420, economy:"100$", military:1, team:1, extra:""},
+"مهدي": { password:"39460", soldiers:125, economy:"100$", military:1, team:1, extra:""},
+"وائل": { password:"58244", soldiers:57, economy:"30$", military:1, team:1, wood:1, iron:1, extra:""},
+"تيم": { password:"49372", soldiers:2220, economy:"200$", military:1, team:1, extra:""},
+"امين": { password:"39461", soldiers:850, economy:"100$", military:1, team:1, extra:""},
+"سبونر": { password:"58245", soldiers:650, economy:"100$", military:1, team:1, extra:""},
+"سوني": { password:"49373", soldiers:2300, revolutionaries:2800, economy:"100$", oil:2, rockets4:1, copy:true, extra:""},
+"فلاديمير (حسن)": { password:"39462", soldiers:1700, economy:"100$", military:1, team:1, extra:""},
+"لونا (برمودا)": { password:"58246", soldiers:205, economy:"100$", military:1, team:1, extra:""}
+};
+
+// 🔹 تغيير الصفحات
+function show(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+// 🔹 تسجيل الدخول ذكي
+function login(){
+  let user = document.getElementById("username").value;
+  let pass = document.getElementById("password").value;
+
+  let cleanUser = user.trim();
+  let cleanPass = pass.trim();
+
+  if(user !== cleanUser){
+    document.getElementById("result").innerText = "⚠️ انتبه: احذف المسافات الزائدة من الاسم";
+    return;
+  }
+  if(pass !== cleanPass){
+    document.getElementById("result").innerText = "⚠️ انتبه: احذف المسافات الزائدة من كلمة السر";
+    return;
+  }
+  if(!users[cleanUser]){
+    document.getElementById("result").innerText = "❌ الاسم غير موجود\nتأكد من الكتابة أو احذف المسافات";
+    return;
+  }
+  if(users[cleanUser].password !== cleanPass){
+    document.getElementById("result").innerText = "❌ كلمة السر غير صحيحة\nحاول مرة أخرى";
+    return;
+  }
+
+  // عرض البيانات
+  let data = users[cleanUser];
+  let display = `👤 الاسم: ${cleanUser}\n`;
+  for(const key in data){
+    if(key !== "password"){
+      display += `• ${key}: ${data[key]}\n`;
+    }
+  }
+  document.getElementById("data").innerText = display;
+  show("profile");
+}
+</script>
+
+</body>
+</html>
